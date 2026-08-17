@@ -6,8 +6,7 @@
 
     <meta
         name="viewport"
-        content="width=device-width,
-                   initial-scale=1.0"
+        content="width=device-width, initial-scale=1.0"
     >
 
     <title>Walkabout</title>
@@ -62,13 +61,12 @@
             font-size: 18px;
         }
 
-        button,
         label {
             display: inline-block;
 
             padding: 15px 25px;
 
-            margin: 8px;
+            margin: 15px 0;
 
             font-size: 18px;
             font-weight: bold;
@@ -82,7 +80,6 @@
             cursor: pointer;
         }
 
-        button:active,
         label:active {
             background: #ffd700;
             color: #201500;
@@ -92,30 +89,27 @@
             display: none;
         }
 
-        #cardDisplay {
+        #status {
+            margin-top: 15px;
+
+            color: #aaa;
+
+            font-size: 16px;
+        }
+
+        #cardPreview {
             display: none;
 
-            max-width: 90vw;
-            max-height: 60vh;
+            max-width: 80vw;
+            max-height: 55vh;
 
-            width: auto;
-            height: auto;
-
-            margin: 20px auto;
+            margin: 25px auto;
 
             border-radius: 8px;
 
             box-shadow:
                 0 4px 15px
                 rgba(0, 0, 0, 0.7);
-        }
-
-        #status {
-            margin-top: 15px;
-
-            color: #aaa;
-
-            font-size: 15px;
         }
 
     </style>
@@ -128,30 +122,28 @@
     <h1>WALKABOUT</h1>
 
     <p>
-        Load a card to test your deck.
+        Choose your tarot deck.
     </p>
 
-
     <label for="deckInput">
-        Load SVG Card
+        Load Deck
     </label>
 
     <input
         id="deckInput"
         type="file"
         accept=".svg,image/svg+xml"
+        multiple
     >
-
-
-    <img
-        id="cardDisplay"
-        alt="Selected Walkabout card"
-    >
-
 
     <div id="status">
-        No card loaded.
+        No deck loaded.
     </div>
+
+    <img
+        id="cardPreview"
+        alt="Deck preview"
+    >
 
 </div>
 
@@ -163,42 +155,84 @@ const deckInput =
         "deckInput"
     );
 
-const cardDisplay =
-    document.getElementById(
-        "cardDisplay"
-    );
-
 const status =
     document.getElementById(
         "status"
     );
+
+const cardPreview =
+    document.getElementById(
+        "cardPreview"
+    );
+
+
+let walkaboutDeck = [];
 
 
 deckInput.addEventListener(
     "change",
     function () {
 
-        const file =
-            deckInput.files[0];
+        const files =
+            [...deckInput.files];
 
-        if (!file) {
+
+        walkaboutDeck =
+            files.filter(
+                file =>
+                    file.type === "image/svg+xml" ||
+                    file.name
+                        .toLowerCase()
+                        .endsWith(".svg")
+            );
+
+
+        console.log(
+            "Walkabout deck loaded:",
+            walkaboutDeck
+        );
+
+
+        if (
+            walkaboutDeck.length === 0
+        ) {
+
+            status.textContent =
+                "No SVG cards selected.";
+
+            cardPreview.style.display =
+                "none";
+
             return;
+
         }
 
 
-        const imageURL =
-            URL.createObjectURL(file);
-
-
-        cardDisplay.src =
-            imageURL;
-
-        cardDisplay.style.display =
-            "block";
-
-
         status.textContent =
-            "Loaded: " + file.name;
+            walkaboutDeck.length +
+            " cards loaded.";
+
+
+        /*
+            Show the first selected
+            card as a simple preview.
+        */
+
+        const firstCard =
+            walkaboutDeck[0];
+
+
+        const previewURL =
+            URL.createObjectURL(
+                firstCard
+            );
+
+
+        cardPreview.src =
+            previewURL;
+
+        cardPreview.style.display =
+            "block";
 
     }
 );
