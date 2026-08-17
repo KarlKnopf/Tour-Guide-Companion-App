@@ -424,18 +424,6 @@ let drawnCards = [];
 let walkaboutDeckBack = null;
 
 
-/*
-    Once a stop reaches 3 cards of the
-    same rank, or 5 cards total, drawing
-    automatically ends.
-
-    This keeps track of whether the
-    current stop is finished.
-*/
-
-let walkaboutStopFinished = false;
-
-
 /* =========================================
    CARD RANKS
    ========================================= */
@@ -638,92 +626,6 @@ function getCardRank(card) {
     return null;
 
 }
-
-
-/* =========================================
-   CHECK WALKABOUT STOP
-   ========================================= */
-
-
-function checkWalkaboutStop() {
-
-    /*
-        Three cards of the same rank
-        immediately end the stop.
-
-        Because every Major Arcana card
-        has rank "M", any three Major
-        Arcana cards trigger this.
-    */
-
-
-    const rankCounts = {};
-
-
-    for (
-        const card of drawnCards
-    ) {
-
-        const rank =
-            getCardRank(card);
-
-
-        if (!rank) {
-            continue;
-        }
-
-
-        rankCounts[rank] =
-            (
-                rankCounts[rank] || 0
-            ) + 1;
-
-
-        if (
-            rankCounts[rank] >= 3
-        ) {
-
-            return {
-                finished: true,
-
-                reason:
-                    "Three cards of rank " +
-                    rank +
-                    " were drawn."
-            };
-
-        }
-
-    }
-
-
-    /*
-        Otherwise, five cards total
-        ends the stop.
-    */
-
-    if (
-        drawnCards.length >= 5
-    ) {
-
-        return {
-            finished: true,
-
-            reason:
-                "Five cards were drawn."
-        };
-
-    }
-
-
-    return {
-        finished: false,
-
-        reason: ""
-    };
-
-}
-
 
 /* =========================================
    SHUFFLE
