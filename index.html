@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -11,14 +12,17 @@
 
     <title>Walkabout</title>
 
+
     <style>
 
         * {
             box-sizing: border-box;
         }
 
+
         html,
         body {
+
             margin: 0;
             padding: 0;
 
@@ -29,177 +33,435 @@
             color: white;
 
             font-family: sans-serif;
+
         }
 
+
         body {
+
             min-height: 100vh;
 
             display: flex;
             justify-content: center;
-            align-items: center;
+
         }
+
 
         #app {
-            width: 100%;
-            max-width: 600px;
 
-            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+
+            padding: 20px;
 
             text-align: center;
+
         }
+
 
         h1 {
-            margin: 0 0 20px;
+
+            margin:
+                10px 0 5px;
 
             color: #ffd700;
 
-            font-size: 40px;
+            font-size: 36px;
+
         }
 
-        p {
-            color: #ccc;
-            font-size: 18px;
-        }
-
-        label {
-            display: inline-block;
-
-            padding: 15px 25px;
-
-            margin: 15px 0;
-
-            font-size: 18px;
-            font-weight: bold;
-
-            color: #ffd700;
-            background: #30240d;
-
-            border: 2px solid #ffd700;
-            border-radius: 12px;
-
-            cursor: pointer;
-        }
-
-        label:active {
-            background: #ffd700;
-            color: #201500;
-        }
-
-        #deckInput {
-            display: none;
-        }
 
         #status {
-            margin-top: 15px;
+
+            margin:
+                10px 0 20px;
 
             color: #aaa;
 
             font-size: 16px;
+
         }
 
-        #cardPreview {
-            display: none;
 
-            max-width: 80vw;
-            max-height: 55vh;
+        #deckArea {
 
-            margin: 25px auto;
+            display: flex;
 
-            border-radius: 8px;
+            justify-content: center;
+
+            align-items: flex-start;
+
+            gap: 30px;
+
+            flex-wrap: wrap;
+
+            margin-top: 20px;
+
+        }
+
+
+        .card-slot {
+
+            width: 190px;
+            min-height: 317px;
+
+        }
+
+
+        .card {
+
+            width: 190px;
+            height: 317px;
+
+            object-fit: contain;
+
+            border-radius: 6px;
 
             box-shadow:
-                0 4px 15px
+                0 5px 15px
                 rgba(0, 0, 0, 0.7);
+
+        }
+
+
+        #deck {
+
+            cursor: pointer;
+
+        }
+
+
+        #deck:active {
+
+            transform:
+                translateY(3px);
+
+        }
+
+
+        #drawnCard {
+
+            display: none;
+
+        }
+
+
+        #controls {
+
+            margin-top: 25px;
+
+        }
+
+
+        button,
+        label {
+
+            display: inline-block;
+
+            padding:
+                13px 20px;
+
+            margin: 5px;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            color: #ffd700;
+
+            background:
+                #30240d;
+
+            border:
+                2px solid #ffd700;
+
+            border-radius: 10px;
+
+            cursor: pointer;
+
+        }
+
+
+        button:active,
+        label:active {
+
+            background:
+                #ffd700;
+
+            color:
+                #201500;
+
+        }
+
+
+        button:disabled {
+
+            opacity: 0.4;
+
+            cursor:
+                not-allowed;
+
+        }
+
+
+        #deckInput {
+
+            display: none;
+
+        }
+
+
+        #deckLoader {
+
+            margin-bottom: 20px;
+
+        }
+
+
+        #drawCount {
+
+            margin-top: 15px;
+
+            color: #ccc;
+
+            font-size: 17px;
+
         }
 
     </style>
+
 </head>
+
 
 <body>
 
+
 <div id="app">
+
 
     <h1>WALKABOUT</h1>
 
-    <p>
-        Choose your tarot deck.
-    </p>
 
-    <label for="deckInput">
-        Load Deck
-    </label>
+    <div id="deckLoader">
 
-    <input
-        id="deckInput"
-        type="file"
-        accept=".svg,image/svg+xml"
-        multiple
-    >
+        <label for="deckInput">
+            Load Deck
+        </label>
+
+        <input
+            id="deckInput"
+            type="file"
+            accept=".svg,image/svg+xml"
+            multiple
+        >
+
+    </div>
+
 
     <div id="status">
         No deck loaded.
     </div>
 
-    <img
-        id="cardPreview"
-        alt="Deck preview"
-    >
+
+    <div id="deckArea">
+
+
+        <div class="card-slot">
+
+            <img
+                id="deck"
+                class="card"
+                alt="Walkabout deck"
+            >
+
+        </div>
+
+
+        <div class="card-slot">
+
+            <img
+                id="drawnCard"
+                class="card"
+                alt="Drawn Walkabout card"
+            >
+
+        </div>
+
+
+    </div>
+
+
+    <div id="controls">
+
+        <button
+            id="drawButton"
+            disabled
+        >
+            Draw Card
+        </button>
+
+
+        <button
+            id="returnButton"
+            disabled
+        >
+            Shuffle & Return
+        </button>
+
+    </div>
+
+
+    <div id="drawCount">
+        Cards drawn: 0
+    </div>
+
 
 </div>
 
 
 <script>
 
+
+/* =========================================
+   ELEMENTS
+   ========================================= */
+
+
 const deckInput =
     document.getElementById(
         "deckInput"
     );
+
+
+const deckImage =
+    document.getElementById(
+        "deck"
+    );
+
+
+const drawnCardImage =
+    document.getElementById(
+        "drawnCard"
+    );
+
 
 const status =
     document.getElementById(
         "status"
     );
 
-const cardPreview =
+
+const drawButton =
     document.getElementById(
-        "cardPreview"
+        "drawButton"
     );
+
+
+const returnButton =
+    document.getElementById(
+        "returnButton"
+    );
+
+
+const drawCount =
+    document.getElementById(
+        "drawCount"
+    );
+
+
+/* =========================================
+   GAME STATE
+   ========================================= */
 
 
 let walkaboutDeck = [];
 
+let drawnCards = [];
+
 let walkaboutDeckBack = null;
+
+
+/* =========================================
+   SHUFFLE
+   ========================================= */
+
+
+function shuffleDeck(array) {
+
+    for (
+        let i = array.length - 1;
+        i > 0;
+        i--
+    ) {
+
+        const j =
+            Math.floor(
+                Math.random() *
+                (i + 1)
+            );
+
+
+        [
+            array[i],
+            array[j]
+        ] =
+        [
+            array[j],
+            array[i]
+        ];
+
+    }
+
+}
+
+
+/* =========================================
+   UPDATE DRAW COUNT
+   ========================================= */
+
+
+function updateDrawCount() {
+
+    drawCount.textContent =
+        "Cards drawn: " +
+        drawnCards.length;
+
+}
+
+
+/* =========================================
+   LOAD DECK
+   ========================================= */
 
 
 deckInput.addEventListener(
     "change",
     function () {
 
+
         const files =
-            [...deckInput.files];
+            [
+                ...deckInput.files
+            ];
 
 
         const svgFiles =
             files.filter(
                 file =>
-                    file.type === "image/svg+xml" ||
+                    file.type ===
+                        "image/svg+xml"
+                    ||
                     file.name
                         .toLowerCase()
-                        .endsWith(".svg")
+                        .endsWith(
+                            ".svg"
+                        )
             );
 
 
-        /*
-            The deck should contain:
-
-            78 playable cards
-            1 deck back
-
-            The back is the final card
-            in your procedural deck.
-        */
-
-        if (svgFiles.length !== 79) {
+        if (
+            svgFiles.length !== 79
+        ) {
 
             status.textContent =
                 "Expected 79 SVGs " +
@@ -208,52 +470,34 @@ deckInput.addEventListener(
                 svgFiles.length +
                 ".";
 
-            cardPreview.style.display =
-                "none";
-
-            walkaboutDeck = [];
-            walkaboutDeckBack = null;
 
             return;
 
         }
 
-
-        /*
-            Your procedural deck uses
-            card78.svg as the back.
-
-            We identify it by filename
-            for now.
-        */
 
         walkaboutDeckBack =
             svgFiles.find(
                 file =>
-                    file.name === "card78.svg"
+                    file.name ===
+                    "card78.svg"
             );
 
 
-        if (!walkaboutDeckBack) {
+        if (
+            !walkaboutDeckBack
+        ) {
 
             status.textContent =
-                "Couldn't find card78.svg " +
-                "for the deck back.";
+                "Couldn't find " +
+                "card78.svg for " +
+                "the deck back.";
 
-            cardPreview.style.display =
-                "none";
-
-            walkaboutDeck = [];
 
             return;
 
         }
 
-
-        /*
-            Everything except card78.svg
-            is a playable card.
-        */
 
         walkaboutDeck =
             svgFiles.filter(
@@ -263,42 +507,263 @@ deckInput.addEventListener(
             );
 
 
+        drawnCards = [];
+
+
+        shuffleDeck(
+            walkaboutDeck
+        );
+
+
+        /*
+            Display the deck back.
+        */
+
+
+        const deckURL =
+            URL.createObjectURL(
+                walkaboutDeckBack
+            );
+
+
+        deckImage.src =
+            deckURL;
+
+
+        deckImage.style.display =
+            "block";
+
+
+        /*
+            Reset the drawn card.
+        */
+
+
+        drawnCardImage.src =
+            "";
+
+
+        drawnCardImage.style.display =
+            "none";
+
+
+        /*
+            Enable controls.
+        */
+
+
+        drawButton.disabled =
+            false;
+
+        returnButton.disabled =
+            true;
+
+
+        status.textContent =
+            "Walkabout deck ready!";
+
+
+        updateDrawCount();
+
+
         console.log(
             "Playable cards:",
             walkaboutDeck
         );
+
 
         console.log(
             "Deck back:",
             walkaboutDeckBack
         );
 
+    }
+);
 
-        status.textContent =
-            walkaboutDeck.length +
-            " cards loaded + deck back.";
+
+/* =========================================
+   DRAW CARD
+   ========================================= */
+
+
+drawButton.addEventListener(
+    "click",
+    function () {
+
+
+        if (
+            walkaboutDeck.length === 0
+        ) {
+
+            status.textContent =
+                "The deck is empty.";
+
+            drawButton.disabled =
+                true;
+
+            return;
+
+        }
+
+
+        const card =
+            walkaboutDeck.pop();
+
+
+        drawnCards.push(
+            card
+        );
 
 
         /*
-            Preview the deck back.
+            Create an object URL
+            for the selected SVG.
         */
 
-        const previewURL =
+
+        const cardURL =
             URL.createObjectURL(
-                walkaboutDeckBack
+                card
             );
 
 
-        cardPreview.src =
-            previewURL;
+        drawnCardImage.src =
+            cardURL;
 
-        cardPreview.style.display =
+
+        drawnCardImage.style.display =
             "block";
+
+
+        returnButton.disabled =
+            false;
+
+
+        status.textContent =
+            "Card drawn.";
+
+
+        updateDrawCount();
+
+
+        console.log(
+            "Drawn:",
+            card.name
+        );
+
+
+        console.log(
+            "Cards remaining:",
+            walkaboutDeck.length
+        );
 
     }
 );
 
+
+/* =========================================
+   RETURN DRAWN CARDS
+   ========================================= */
+
+
+returnButton.addEventListener(
+    "click",
+    function () {
+
+
+        if (
+            drawnCards.length === 0
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+            Put all drawn cards
+            back into the deck.
+        */
+
+
+        walkaboutDeck.push(
+            ...drawnCards
+        );
+
+
+        drawnCards = [];
+
+
+        /*
+            Shuffle the complete
+            playable deck.
+        */
+
+
+        shuffleDeck(
+            walkaboutDeck
+        );
+
+
+        /*
+            Hide the drawn card.
+        */
+
+
+        drawnCardImage.src =
+            "";
+
+        drawnCardImage.style.display =
+            "none";
+
+
+        returnButton.disabled =
+            true;
+
+
+        drawButton.disabled =
+            false;
+
+
+        status.textContent =
+            "Cards returned " +
+            "and shuffled.";
+
+
+        updateDrawCount();
+
+
+        console.log(
+            "Deck reshuffled."
+        );
+
+    }
+);
+
+
+/* =========================================
+   CLICKING THE DECK
+   ========================================= */
+
+
+deckImage.addEventListener(
+    "click",
+    function () {
+
+        if (
+            !drawButton.disabled
+        ) {
+
+            drawButton.click();
+
+        }
+
+    }
+);
+
+
 </script>
 
 </body>
+
 </html>
