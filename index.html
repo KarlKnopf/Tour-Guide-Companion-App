@@ -897,17 +897,32 @@ drawButton.addEventListener(
 
 
         const cardURL =
-            URL.createObjectURL(
-                card
-            );
+    URL.createObjectURL(
+        card
+    );
 
 
-        drawnCardImage.src =
-            cardURL;
+const cardImage =
+    document.createElement(
+        "img"
+    );
 
 
-        drawnCardImage.style.display =
-            "block";
+cardImage.className =
+    "card";
+
+
+cardImage.alt =
+    "Drawn Walkabout card";
+
+
+cardImage.src =
+    cardURL;
+
+
+drawnCardsContainer.appendChild(
+    cardImage
+);
 
 
         returnButton.disabled =
