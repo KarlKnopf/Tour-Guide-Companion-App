@@ -381,6 +381,248 @@ let drawnCards = [];
 let walkaboutDeckBack = null;
 
 
+/*
+    Once a stop reaches 3 cards of the
+    same rank, or 5 cards total, drawing
+    automatically ends.
+
+    This keeps track of whether the
+    current stop is finished.
+*/
+
+let walkaboutStopFinished = false;
+
+
+/* =========================================
+   CARD RANKS
+   ========================================= */
+
+
+/*
+    The deck is numbered:
+
+        card0.svg - card21.svg
+            Major Arcana
+
+        card22.svg onward
+            Minor Arcana
+
+    Each suit contains 14 cards:
+
+        Ace
+        2 through 10
+        Page
+        Knight
+        Queen
+        King
+
+    Therefore card49.svg is:
+
+        49 - 22 = 27
+        27 / 14 = second suit
+        27 % 14 = 13
+        rank 13 = King
+
+    This matches the established
+    King of Cups = card49.svg mapping.
+
+    All Major Arcana share rank "M".
+*/
+
+
+const minorArcanaRanks = [
+
+    "A",
+
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+
+    "P",
+
+    "Kn",
+
+    "Q",
+
+    "K"
+
+];
+
+
+function getCardRank(card) {
+
+    /*
+        Extract the card number from
+        names such as "card49.svg".
+    */
+
+    const match =
+        card.name.match(
+            /card(\d+)\.svg$/i
+        );
+
+
+    if (!match) {
+
+        console.error(
+            "Could not determine card number:",
+            card.name
+        );
+
+        return null;
+
+    }
+
+
+    const cardNumber =
+        Number(
+            match[1]
+        );
+
+
+    /*
+        Major Arcana:
+        card0 through card21
+    */
+
+    if (
+        cardNumber >= 0 &&
+        cardNumber <= 21
+    ) {
+
+        return "M";
+
+    }
+
+
+    /*
+        Minor Arcana.
+    */
+
+    const minorIndex =
+        cardNumber - 22;
+
+
+    const rankIndex =
+        minorIndex % 14;
+
+
+    if (
+        rankIndex >= 0 &&
+        rankIndex <
+            minorArcanaRanks.length
+    ) {
+
+        return minorArcanaRanks[
+            rankIndex
+        ];
+
+    }
+
+
+    console.error(
+        "Invalid playable card number:",
+        cardNumber,
+        card.name
+    );
+
+
+    return null;
+
+}
+
+
+/* =========================================
+   CHECK WALKABOUT STOP
+   ========================================= */
+
+
+function checkWalkaboutStop() {
+
+    /*
+        Three cards of the same rank
+        immediately end the stop.
+
+        Because every Major Arcana card
+        has rank "M", any three Major
+        Arcana cards trigger this.
+    */
+
+
+    const rankCounts = {};
+
+
+    for (
+        const card of drawnCards
+    ) {
+
+        const rank =
+            getCardRank(card);
+
+
+        if (!rank) {
+            continue;
+        }
+
+
+        rankCounts[rank] =
+            (
+                rankCounts[rank] || 0
+            ) + 1;
+
+
+        if (
+            rankCounts[rank] >= 3
+        ) {
+
+            return {
+                finished: true,
+
+                reason:
+                    "Three cards of rank " +
+                    rank +
+                    " were drawn."
+            };
+
+        }
+
+    }
+
+
+    /*
+        Otherwise, five cards total
+        ends the stop.
+    */
+
+    if (
+        drawnCards.length >= 5
+    ) {
+
+        return {
+            finished: true,
+
+            reason:
+                "Five cards were drawn."
+        };
+
+    }
+
+
+    return {
+        finished: false,
+
+        reason: ""
+    };
+
+}
+
+
 /* =========================================
    SHUFFLE
    ========================================= */
@@ -510,6 +752,10 @@ deckInput.addEventListener(
         drawnCards = [];
 
 
+        walkaboutStopFinished =
+            false;
+
+
         shuffleDeck(
             walkaboutDeck
         );
@@ -591,6 +837,21 @@ drawButton.addEventListener(
     function () {
 
 
+        /*
+            Don't allow another card
+            after the stop has finished.
+        */
+
+
+        if (
+            walkaboutStopFinished
+        ) {
+
+            return;
+
+        }
+
+
         if (
             walkaboutDeck.length === 0
         ) {
@@ -639,17 +900,67 @@ drawButton.addEventListener(
             false;
 
 
-        status.textContent =
-            "Card drawn.";
+        /*
+            Determine the card's rank.
+        */
+
+
+        const rank =
+            getCardRank(card);
+
+
+        console.log(
+            "Drawn:",
+            card.name,
+            "Rank:",
+            rank
+        );
 
 
         updateDrawCount();
 
 
-        console.log(
-            "Drawn:",
-            card.name
-        );
+        /*
+            Now check whether this
+            card ended the stop.
+        */
+
+
+        const stopResult =
+            checkWalkaboutStop();
+
+
+        if (
+            stopResult.finished
+        ) {
+
+            walkaboutStopFinished =
+                true;
+
+
+            drawButton.disabled =
+                true;
+
+
+            status.textContent =
+                "Stop complete: " +
+                stopResult.reason;
+
+
+            console.log(
+                "Walkabout stop complete:",
+                stopResult.reason
+            );
+
+
+            return;
+
+        }
+
+
+        status.textContent =
+            "Card drawn: rank " +
+            rank;
 
 
         console.log(
@@ -692,6 +1003,15 @@ returnButton.addEventListener(
 
 
         drawnCards = [];
+
+
+        /*
+            The next stop can begin.
+        */
+
+
+        walkaboutStopFinished =
+            false;
 
 
         /*
