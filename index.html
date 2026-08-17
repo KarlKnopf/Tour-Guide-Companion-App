@@ -351,6 +351,13 @@
             Shuffle & Return
         </button>
 
+        <button
+    id="reversalButton"
+    type="button"
+>
+    Reversals: ENABLED
+</button>
+
     </div>
 
 
@@ -411,6 +418,11 @@ const drawCount =
         "drawCount"
     );
 
+    const reversalButton =
+    document.getElementById(
+        "reversalButton"
+    );
+
 
 /* =========================================
    GAME STATE
@@ -422,6 +434,14 @@ let walkaboutDeck = [];
 let drawnCards = [];
 
 let walkaboutDeckBack = null;
+
+
+/*
+    Whether newly drawn cards can be
+    randomly reversed.
+*/
+
+let walkaboutReversalsEnabled = true;
 
 
 /* =========================================
@@ -1137,6 +1157,32 @@ returnButton.addEventListener(
 
         console.log(
             "Deck reshuffled."
+        );
+
+    }
+);
+
+/* =========================================
+   TOGGLE REVERSALS
+   ========================================= */
+
+reversalButton.addEventListener(
+    "click",
+    function () {
+
+        walkaboutReversalsEnabled =
+            !walkaboutReversalsEnabled;
+
+
+        reversalButton.textContent =
+            walkaboutReversalsEnabled
+                ? "Reversals: ENABLED"
+                : "Reversals: DISABLED";
+
+
+        console.log(
+            "Walkabout reversals:",
+            walkaboutReversalsEnabled
         );
 
     }
