@@ -6,166 +6,82 @@
 
     <meta
         name="viewport"
-        content="width=device-width,
-                   initial-scale=1.0"
+        content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Walkabout</title>
+    <title>Walkabout SVG Test</title>
 
     <style>
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html,
         body {
             margin: 0;
-            padding: 0;
-
-            width: 100%;
-            min-height: 100%;
+            padding: 30px;
 
             background: #151515;
             color: white;
 
             font-family: sans-serif;
-        }
-
-        body {
-            min-height: 100vh;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #app {
-            width: 100%;
-            max-width: 600px;
-
-            padding: 30px;
-
             text-align: center;
         }
 
-        h1 {
-            margin: 0 0 20px;
-
-            color: #ffd700;
-
-            font-size: 40px;
-        }
-
-        p {
-            color: #ccc;
-            font-size: 18px;
-        }
-
-        button,
-        label {
-            display: inline-block;
-
+        button {
             padding: 15px 25px;
 
-            margin: 8px;
-
             font-size: 18px;
-            font-weight: bold;
 
             color: #ffd700;
             background: #30240d;
 
             border: 2px solid #ffd700;
             border-radius: 12px;
-
-            cursor: pointer;
         }
 
-        button:active,
-        label:active {
-            background: #ffd700;
-            color: #201500;
-        }
-
-        #deckInput {
-            display: none;
-        }
-
-        #cardDisplay {
-            display: none;
-
-            max-width: 90vw;
-            max-height: 60vh;
-
-            width: auto;
-            height: auto;
-
-            margin: 20px auto;
-
-            border-radius: 8px;
-
-            box-shadow:
-                0 4px 15px
-                rgba(0, 0, 0, 0.7);
+        #fileInput {
+            margin-top: 20px;
         }
 
         #status {
-            margin-top: 15px;
-
+            margin-top: 20px;
             color: #aaa;
-
-            font-size: 15px;
         }
 
+        #card {
+            display: none;
+
+            max-width: 80vw;
+            max-height: 60vh;
+
+            margin: 20px auto;
+        }
     </style>
 </head>
 
 <body>
 
-<div id="app">
+<h1>WALKABOUT</h1>
 
-    <h1>WALKABOUT</h1>
+<p>SVG loading test</p>
 
-    <p>
-        Load a card to test your deck.
-    </p>
+<input
+    id="fileInput"
+    type="file"
+    accept="image/svg+xml,.svg"
+>
 
-
-    <label for="deckInput">
-        Load SVG Card
-    </label>
-
-    <input
-        id="deckInput"
-        type="file"
-        accept=".svg,image/svg+xml"
-    >
-
-
-    <img
-        id="cardDisplay"
-        alt="Selected Walkabout card"
-    >
-
-
-    <div id="status">
-        No card loaded.
-    </div>
-
+<div id="status">
+    No file selected.
 </div>
+
+<img
+    id="card"
+    alt="Selected SVG"
+>
 
 
 <script>
 
-const deckInput =
+const fileInput =
     document.getElementById(
-        "deckInput"
-    );
-
-const cardDisplay =
-    document.getElementById(
-        "cardDisplay"
+        "fileInput"
     );
 
 const status =
@@ -173,32 +89,109 @@ const status =
         "status"
     );
 
+const card =
+    document.getElementById(
+        "card"
+    );
 
-deckInput.addEventListener(
+
+fileInput.addEventListener(
     "change",
     function () {
 
+        console.log(
+            "FILE INPUT CHANGED"
+        );
+
+
         const file =
-            deckInput.files[0];
+            fileInput.files[0];
+
+
+        console.log(
+            "Selected file:",
+            file
+        );
+
 
         if (!file) {
+
+            status.textContent =
+                "No file selected.";
+
             return;
+
         }
 
 
-        const imageURL =
-            URL.createObjectURL(file);
-
-
-        cardDisplay.src =
-            imageURL;
-
-        cardDisplay.style.display =
-            "block";
-
-
         status.textContent =
-            "Loaded: " + file.name;
+            "Selected: " +
+            file.name;
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            function () {
+
+                console.log(
+                    "FILE READ SUCCESSFULLY"
+                );
+
+
+                console.log(
+                    reader.result
+                );
+
+
+                const blob =
+                    new Blob(
+                        [reader.result],
+                        {
+                            type:
+                                "image/svg+xml"
+                        }
+                    );
+
+
+                const url =
+                    URL.createObjectURL(
+                        blob
+                    );
+
+
+                card.src =
+                    url;
+
+                card.style.display =
+                    "block";
+
+
+                status.textContent =
+                    "SVG loaded: " +
+                    file.name;
+
+            };
+
+
+        reader.onerror =
+            function () {
+
+                console.error(
+                    "FILE READ FAILED",
+                    reader.error
+                );
+
+
+                status.textContent =
+                    "Could not read file.";
+
+            };
+
+
+        reader.readAsText(file);
 
     }
 );
