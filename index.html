@@ -62,8 +62,13 @@
             font-size: 18px;
         }
 
-        button {
+        button,
+        label {
+            display: inline-block;
+
             padding: 15px 25px;
+
+            margin: 8px;
 
             font-size: 18px;
             font-weight: bold;
@@ -77,9 +82,40 @@
             cursor: pointer;
         }
 
-        button:active {
+        button:active,
+        label:active {
             background: #ffd700;
             color: #201500;
+        }
+
+        #deckInput {
+            display: none;
+        }
+
+        #cardDisplay {
+            display: none;
+
+            max-width: 90vw;
+            max-height: 60vh;
+
+            width: auto;
+            height: auto;
+
+            margin: 20px auto;
+
+            border-radius: 8px;
+
+            box-shadow:
+                0 4px 15px
+                rgba(0, 0, 0, 0.7);
+        }
+
+        #status {
+            margin-top: 15px;
+
+            color: #aaa;
+
+            font-size: 15px;
         }
 
     </style>
@@ -92,14 +128,82 @@
     <h1>WALKABOUT</h1>
 
     <p>
-        Your Walkabout companion is ready.
+        Load a card to test your deck.
     </p>
 
-    <button>
-        Load Deck
-    </button>
+
+    <label for="deckInput">
+        Load SVG Card
+    </label>
+
+    <input
+        id="deckInput"
+        type="file"
+        accept=".svg,image/svg+xml"
+    >
+
+
+    <img
+        id="cardDisplay"
+        alt="Selected Walkabout card"
+    >
+
+
+    <div id="status">
+        No card loaded.
+    </div>
 
 </div>
+
+
+<script>
+
+const deckInput =
+    document.getElementById(
+        "deckInput"
+    );
+
+const cardDisplay =
+    document.getElementById(
+        "cardDisplay"
+    );
+
+const status =
+    document.getElementById(
+        "status"
+    );
+
+
+deckInput.addEventListener(
+    "change",
+    function () {
+
+        const file =
+            deckInput.files[0];
+
+        if (!file) {
+            return;
+        }
+
+
+        const imageURL =
+            URL.createObjectURL(file);
+
+
+        cardDisplay.src =
+            imageURL;
+
+        cardDisplay.style.display =
+            "block";
+
+
+        status.textContent =
+            "Loaded: " + file.name;
+
+    }
+);
+
+</script>
 
 </body>
 </html>
