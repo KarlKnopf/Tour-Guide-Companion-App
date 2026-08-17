@@ -228,6 +228,28 @@
 
         }
 
+.drawn-cards {
+
+    width: 100%;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: flex-start;
+
+    gap: 12px;
+
+    flex-wrap: wrap;
+
+}
+
+.drawn-cards .card {
+
+    width: 140px;
+    height: auto;
+
+}
+
     </style>
 
 </head>
@@ -266,15 +288,11 @@
     <div id="deckArea">
 
 
-        <div class="card-slot">
-
-            <img
-                id="deck"
-                class="card"
-                alt="Walkabout deck"
-            >
-
-        </div>
+        <div
+    id="drawnCards"
+    class="drawn-cards"
+>
+</div>
 
 
         <div class="card-slot">
@@ -339,9 +357,9 @@ const deckImage =
     );
 
 
-const drawnCardImage =
+const drawnCardsContainer =
     document.getElementById(
-        "drawnCard"
+        "drawnCards"
     );
 
 
@@ -785,12 +803,8 @@ deckInput.addEventListener(
         */
 
 
-        drawnCardImage.src =
-            "";
-
-
-        drawnCardImage.style.display =
-            "none";
+        drawnCardsContainer.innerHTML =
+    "";
 
 
         /*
@@ -1030,11 +1044,8 @@ returnButton.addEventListener(
         */
 
 
-        drawnCardImage.src =
-            "";
-
-        drawnCardImage.style.display =
-            "none";
+        drawnCardsContainer.innerHTML =
+    "";
 
 
         returnButton.disabled =
