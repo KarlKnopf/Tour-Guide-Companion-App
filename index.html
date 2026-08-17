@@ -934,12 +934,10 @@ drawButton.addEventListener(
     "click",
     function () {
 
-
         /*
             Don't allow another card
             after the stop has finished.
         */
-
 
         if (
             walkaboutStopFinished
@@ -965,6 +963,10 @@ drawButton.addEventListener(
         }
 
 
+        /*
+            Draw the next card.
+        */
+
         const card =
             walkaboutDeck.pop();
 
@@ -975,105 +977,144 @@ drawButton.addEventListener(
 
 
         /*
-            Create an object URL
-            for the selected SVG.
+            Determine the rank BEFORE
+            using it for the prompt.
         */
 
+        const rank =
+            getCardRank(card);
+
+
+        /*
+            Create the card's object URL.
+        */
 
         const cardURL =
-    URL.createObjectURL(
-        card
-    );
+            URL.createObjectURL(
+                card
+            );
 
 
-const cardContainer =
-    document.createElement(
-        "div"
-    );
+        /*
+            Create the container that holds
+            both the card image and its prompt.
+        */
+
+        const cardContainer =
+            document.createElement(
+                "div"
+            );
 
 
-cardContainer.className =
-    "drawn-card";
+        cardContainer.className =
+            "drawn-card";
 
 
-const cardImage =
-    document.createElement(
-        "img"
-    );
+        /*
+            Create the card image.
+        */
+
+        const cardImage =
+            document.createElement(
+                "img"
+            );
 
 
-cardImage.className =
-    "card";
+        cardImage.className =
+            "card";
 
 
-cardImage.alt =
-    "Drawn Walkabout card";
+        cardImage.alt =
+            "Drawn Walkabout card";
 
 
-cardImage.src =
-    cardURL;
+        cardImage.src =
+            cardURL;
 
 
-const promptDisplay =
-    document.createElement(
-        "div"
-    );
+        /*
+            Create the Walkabout prompt.
+        */
+
+        const promptDisplay =
+            document.createElement(
+                "div"
+            );
 
 
-promptDisplay.className =
-    "walkabout-prompt";
+        promptDisplay.className =
+            "walkabout-prompt";
 
 
-promptDisplay.textContent =
-    getWalkaboutPrompt(
-        rank
-    );
+        promptDisplay.textContent =
+            getWalkaboutPrompt(
+                rank
+            );
 
 
-cardContainer.appendChild(
-    cardImage
-);
+        /*
+            Put the image and prompt
+            into the card container.
+        */
+
+        cardContainer.appendChild(
+            cardImage
+        );
 
 
-cardContainer.appendChild(
-    promptDisplay
-);
+        cardContainer.appendChild(
+            promptDisplay
+        );
 
 
-drawnCardsContainer.appendChild(
-    cardContainer
-);
+        /*
+            Put this card into the
+            current stop's spread.
+        */
 
+        drawnCardsContainer.appendChild(
+            cardContainer
+        );
+
+
+        /*
+            Enable returning the
+            current stop's cards.
+        */
 
         returnButton.disabled =
             false;
 
 
         /*
-            Determine the card's rank.
+            Update the counter.
         */
 
-
-        const rank =
-            getCardRank(card);
+        updateDrawCount();
 
 
         console.log(
             "Drawn:",
             card.name,
             "Rank:",
-            rank
+            rank,
+            "Prompt:",
+            getWalkaboutPrompt(
+                rank
+            )
         );
 
 
-        updateDrawCount();
+        console.log(
+            "Cards remaining:",
+            walkaboutDeck.length
+        );
 
 
         /*
-            Now check whether this
-            card ended the stop.
+            Check whether this card
+            ends the Walkabout stop.
         */
-
 
         const stopResult =
             checkWalkaboutStop();
@@ -1111,15 +1152,8 @@ drawnCardsContainer.appendChild(
             "Card drawn: rank " +
             rank;
 
-
-        console.log(
-            "Cards remaining:",
-            walkaboutDeck.length
-        );
-
     }
 );
-
 
 /* =========================================
    RETURN DRAWN CARDS
