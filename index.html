@@ -168,6 +168,8 @@ const cardPreview =
 
 let walkaboutDeck = [];
 
+let walkaboutDeckBack = null;
+
 
 deckInput.addEventListener(
     "change",
@@ -177,7 +179,7 @@ deckInput.addEventListener(
             [...deckInput.files];
 
 
-        walkaboutDeck =
+        const svgFiles =
             files.filter(
                 file =>
                     file.type === "image/svg+xml" ||
@@ -187,44 +189,103 @@ deckInput.addEventListener(
             );
 
 
-        console.log(
-            "Walkabout deck loaded:",
-            walkaboutDeck
-        );
+        /*
+            The deck should contain:
 
+            78 playable cards
+            1 deck back
 
-        if (
-            walkaboutDeck.length === 0
-        ) {
+            The back is the final card
+            in your procedural deck.
+        */
+
+        if (svgFiles.length !== 79) {
 
             status.textContent =
-                "No SVG cards selected.";
+                "Expected 79 SVGs " +
+                "(78 cards + 1 back), " +
+                "but found " +
+                svgFiles.length +
+                ".";
 
             cardPreview.style.display =
                 "none";
+
+            walkaboutDeck = [];
+            walkaboutDeckBack = null;
 
             return;
 
         }
 
 
-        status.textContent =
-            walkaboutDeck.length +
-            " cards loaded.";
+        /*
+            Your procedural deck uses
+            card78.svg as the back.
+
+            We identify it by filename
+            for now.
+        */
+
+        walkaboutDeckBack =
+            svgFiles.find(
+                file =>
+                    file.name === "card78.svg"
+            );
+
+
+        if (!walkaboutDeckBack) {
+
+            status.textContent =
+                "Couldn't find card78.svg " +
+                "for the deck back.";
+
+            cardPreview.style.display =
+                "none";
+
+            walkaboutDeck = [];
+
+            return;
+
+        }
 
 
         /*
-            Show the first selected
-            card as a simple preview.
+            Everything except card78.svg
+            is a playable card.
         */
 
-        const firstCard =
-            walkaboutDeck[0];
+        walkaboutDeck =
+            svgFiles.filter(
+                file =>
+                    file !==
+                    walkaboutDeckBack
+            );
 
+
+        console.log(
+            "Playable cards:",
+            walkaboutDeck
+        );
+
+        console.log(
+            "Deck back:",
+            walkaboutDeckBack
+        );
+
+
+        status.textContent =
+            walkaboutDeck.length +
+            " cards loaded + deck back.";
+
+
+        /*
+            Preview the deck back.
+        */
 
         const previewURL =
             URL.createObjectURL(
-                firstCard
+                walkaboutDeckBack
             );
 
 
