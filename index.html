@@ -439,7 +439,7 @@ function openWalkaboutDatabase() {
             const request =
                 indexedDB.open(
                     WALKABOUT_DB_NAME,
-                    WALKABOUT_DB_VERSION
+                    WALKABOUT_DB_VERSION + 1
                 );
 
 
@@ -450,6 +450,10 @@ function openWalkaboutDatabase() {
                         event.target.result;
 
 
+                    /*
+                        Store for game state.
+                    */
+
                     if (
                         !db.objectStoreNames.contains(
                             WALKABOUT_STORE
@@ -458,6 +462,23 @@ function openWalkaboutDatabase() {
 
                         db.createObjectStore(
                             WALKABOUT_STORE
+                        );
+
+                    }
+
+
+                    /*
+                        Store for uploaded deck files.
+                    */
+
+                    if (
+                        !db.objectStoreNames.contains(
+                            "deckFiles"
+                        )
+                    ) {
+
+                        db.createObjectStore(
+                            "deckFiles"
                         );
 
                     }
@@ -489,6 +510,110 @@ function openWalkaboutDatabase() {
 
 }
 
+    async function saveWalkaboutDeckFiles(
+    files
+) {
+
+    try {
+
+        const db =
+            await openWalkaboutDatabase();
+
+
+        await new Promise(
+            function (resolve, reject) {
+
+                const transaction =
+                    db.transaction(
+                        "deckFiles",
+                        "readwrite"
+                    );
+
+
+                const store =
+                    transaction.objectStore(
+                        "deckFiles"
+                    );
+
+
+                /*
+                    Remove the previous deck.
+                */
+
+                const clearRequest =
+                    store.clear();
+
+
+                clearRequest.onerror =
+                    function () {
+
+                        reject(
+                            clearRequest.error
+                        );
+
+                    };
+
+
+                clearRequest.onsuccess =
+                    function () {
+
+                        /*
+                            Store every SVG using
+                            its filename as the key.
+                        */
+
+                        for (
+                            const file of files
+                        ) {
+
+                            store.put(
+                                file,
+                                file.name
+                            );
+
+                        }
+
+                    };
+
+                transaction.oncomplete =
+                    function () {
+
+                        resolve();
+
+                    };
+
+
+                transaction.onerror =
+                    function () {
+
+                        reject(
+                            transaction.error
+                        );
+
+                    };
+
+            }
+        );
+
+
+        db.close();
+
+
+        console.log(
+            "Walkabout deck files saved."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Couldn't save deck files:",
+            error
+        );
+
+    }
+
+}
 
 async function saveWalkaboutState() {
 
@@ -670,17 +795,95 @@ async function loadWalkaboutState() {
         }
 
 
-        walkaboutDeck =
-            state.deck || [];
+        /*
+            Restore the playable deck.
+        */
 
+        walkaboutDeck = [];
+
+
+        for (
+            const filename of state.deck || []
+        ) {
+
+            const file =
+                await getSavedDeckFile(
+                    filename
+                );
+
+
+            if (file) {
+
+                walkaboutDeck.push(
+                    file
+                );
+
+            }
+
+        }
+
+
+        /*
+            Restore the deck back.
+        */
 
         walkaboutDeckBack =
-            state.deckBack || null;
+            state.deckBack
+                ? await getSavedDeckFile(
+                    state.deckBack
+                )
+                : null;
 
 
-        drawnCards =
-            state.drawnCards || [];
+        /*
+            Restore the drawn cards.
+        */
 
+        drawnCards = [];
+
+
+        for (
+            const savedCard
+            of state.drawnCards || []
+        ) {
+
+            const file =
+                await getSavedDeckFile(
+                    savedCard.name
+                );
+
+
+            if (!file) {
+
+                console.warn(
+                    "Couldn't restore:",
+                    savedCard.name
+                );
+
+                continue;
+
+            }
+
+
+            drawnCards.push({
+
+                file:
+                    file,
+
+                rank:
+                    savedCard.rank,
+
+                reversed:
+                    savedCard.reversed
+
+            });
+
+        }
+
+
+        /*
+            Restore reversal setting.
+        */
 
         if (
             typeof state.reversalsEnabled ===
@@ -694,7 +897,7 @@ async function loadWalkaboutState() {
 
 
         /*
-            Recreate the visible deck.
+            Display the deck back.
         */
 
         if (
@@ -718,7 +921,7 @@ async function loadWalkaboutState() {
 
 
         /*
-            Recreate the drawn-card spread.
+            Rebuild the current spread.
         */
 
         drawnCardsContainer.innerHTML =
@@ -726,7 +929,8 @@ async function loadWalkaboutState() {
 
 
         for (
-            const drawnCard of drawnCards
+            const drawnCard
+            of drawnCards
         ) {
 
             displayWalkaboutCard(
@@ -735,6 +939,10 @@ async function loadWalkaboutState() {
 
         }
 
+
+        /*
+            Restore controls.
+        */
 
         updateDrawCount();
 
@@ -745,12 +953,6 @@ async function loadWalkaboutState() {
 
         returnButton.disabled =
             drawnCards.length === 0;
-
-
-        reversalButton.textContent =
-            walkaboutReversalsEnabled
-                ? "Reversals: ENABLED"
-                : "Reversals: DISABLED";
 
 
         status.textContent =
@@ -772,7 +974,6 @@ async function loadWalkaboutState() {
     }
 
 }
-
 
 function displayWalkaboutCard(
     drawnCard
@@ -1155,7 +1356,7 @@ function updateDrawCount() {
 
 deckInput.addEventListener(
     "change",
-    function () {
+    async function () {
 
 
         const files =
@@ -1193,6 +1394,10 @@ deckInput.addEventListener(
             return;
 
         }
+
+        await saveWalkaboutDeckFiles(
+    svgFiles
+);
 
 
         walkaboutDeckBack =
@@ -1294,6 +1499,67 @@ deckInput.addEventListener(
 saveWalkaboutState();
     }
 );
+
+    async function getSavedDeckFile(
+    filename
+) {
+
+    const db =
+        await openWalkaboutDatabase();
+
+
+    const file =
+        await new Promise(
+            function (resolve, reject) {
+
+                const transaction =
+                    db.transaction(
+                        "deckFiles",
+                        "readonly"
+                    );
+
+
+                const store =
+                    transaction.objectStore(
+                        "deckFiles"
+                    );
+
+
+                const request =
+                    store.get(
+                        filename
+                    );
+
+
+                request.onsuccess =
+                    function () {
+
+                        resolve(
+                            request.result
+                        );
+
+                    };
+
+
+                request.onerror =
+                    function () {
+
+                        reject(
+                            request.error
+                        );
+
+                    };
+
+            }
+        );
+
+
+    db.close();
+
+
+    return file;
+
+}
 
 
 /* =========================================
@@ -1562,8 +1828,7 @@ deckImage.addEventListener(
     }
 );
 
-// Stage 2 will restore the deck from persistent file storage.
-// loadWalkaboutState();
+loadWalkaboutState();
 </script>
 
 </body>
