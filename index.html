@@ -1184,10 +1184,6 @@ deckInput.addEventListener(
         drawnCards = [];
 
 
-        walkaboutStopFinished =
-            false;
-
-
         shuffleDeck(
             walkaboutDeck
         );
@@ -1263,20 +1259,6 @@ saveWalkaboutState();
 drawButton.addEventListener(
     "click",
     function () {
-
-        /*
-            Don't allow another card
-            after the stop has finished.
-        */
-
-        if (
-            walkaboutStopFinished
-        ) {
-
-            return;
-
-        }
-
 
         if (
             walkaboutDeck.length === 0
@@ -1441,38 +1423,7 @@ if (
             ends the Walkabout stop.
         */
 
-        const stopResult =
-            checkWalkaboutStop();
-
-
-        if (
-            stopResult.finished
-        ) {
-
-            walkaboutStopFinished =
-                true;
-
-
-            drawButton.disabled =
-                true;
-
-
-            status.textContent =
-                "Stop complete: " +
-                stopResult.reason;
-
-
-            console.log(
-                "Walkabout stop complete:",
-                stopResult.reason
-            );
-
-
-            return;
-
-        }
-
-
+        
         status.textContent =
             "Card drawn: rank " +
             rank;
@@ -1519,10 +1470,6 @@ returnButton.addEventListener(
         /*
             The next stop can begin.
         */
-
-
-        walkaboutStopFinished =
-            false;
 
 
         /*
