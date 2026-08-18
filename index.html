@@ -785,8 +785,30 @@ function displayWalkaboutCard(
         "Drawn Walkabout card";
 
 
-    cardImage.src =
-        cardURL;
+    cardImage.onload =
+    function () {
+
+        console.log(
+            "Walkabout card rendered:",
+            drawnCard.file.name
+        );
+
+    };
+
+
+cardImage.onerror =
+    function () {
+
+        console.error(
+            "Walkabout card failed to render:",
+            drawnCard.file.name
+        );
+
+    };
+
+
+cardImage.src =
+    cardURL;
 
 
     if (
