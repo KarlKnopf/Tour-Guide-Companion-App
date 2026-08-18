@@ -498,16 +498,40 @@ async function saveWalkaboutState() {
             await openWalkaboutDatabase();
 
 
+        /*
+            Save only game-state information.
+
+            Do NOT save File objects here.
+        */
+
         const state = {
 
             deck:
-                walkaboutDeck,
+                walkaboutDeck.map(
+                    file =>
+                        file.name
+                ),
 
             deckBack:
-                walkaboutDeckBack,
+                walkaboutDeckBack
+                    ? walkaboutDeckBack.name
+                    : null,
 
             drawnCards:
-                drawnCards,
+                drawnCards.map(
+                    drawnCard => ({
+
+                        name:
+                            drawnCard.file.name,
+
+                        rank:
+                            drawnCard.rank,
+
+                        reversed:
+                            drawnCard.reversed
+
+                    })
+                ),
 
             reversalsEnabled:
                 walkaboutReversalsEnabled
@@ -577,7 +601,6 @@ async function saveWalkaboutState() {
     }
 
 }
-
 
 async function loadWalkaboutState() {
 
@@ -1539,7 +1562,8 @@ deckImage.addEventListener(
     }
 );
 
-loadWalkaboutState();
+// Stage 2 will restore the deck from persistent file storage.
+// loadWalkaboutState();
 </script>
 
 </body>
