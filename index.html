@@ -425,6 +425,421 @@ const drawCount =
 
 
 /* =========================================
+   PERSISTENT WALKABOUT STATE
+   ========================================= */
+
+const WALKABOUT_DB_NAME =
+    "WalkaboutCompanion";
+
+const WALKABOUT_DB_VERSION =
+    1;
+
+const WALKABOUT_STORE =
+    "gameState";
+
+
+function openWalkaboutDatabase() {
+
+    return new Promise(
+        function (resolve, reject) {
+
+            const request =
+                indexedDB.open(
+                    WALKABOUT_DB_NAME,
+                    WALKABOUT_DB_VERSION
+                );
+
+
+            request.onupgradeneeded =
+                function (event) {
+
+                    const db =
+                        event.target.result;
+
+
+                    if (
+                        !db.objectStoreNames.contains(
+                            WALKABOUT_STORE
+                        )
+                    ) {
+
+                        db.createObjectStore(
+                            WALKABOUT_STORE
+                        );
+
+                    }
+
+                };
+
+
+            request.onsuccess =
+                function () {
+
+                    resolve(
+                        request.result
+                    );
+
+                };
+
+
+            request.onerror =
+                function () {
+
+                    reject(
+                        request.error
+                    );
+
+                };
+
+        }
+    );
+
+}
+
+
+async function saveWalkaboutState() {
+
+    try {
+
+        const db =
+            await openWalkaboutDatabase();
+
+
+        const state = {
+
+            deck:
+                walkaboutDeck,
+
+            deckBack:
+                walkaboutDeckBack,
+
+            drawnCards:
+                drawnCards,
+
+            reversalsEnabled:
+                walkaboutReversalsEnabled
+
+        };
+
+
+        await new Promise(
+            function (resolve, reject) {
+
+                const transaction =
+                    db.transaction(
+                        WALKABOUT_STORE,
+                        "readwrite"
+                    );
+
+
+                const store =
+                    transaction.objectStore(
+                        WALKABOUT_STORE
+                    );
+
+
+                const request =
+                    store.put(
+                        state,
+                        "current"
+                    );
+
+
+                request.onsuccess =
+                    function () {
+
+                        resolve();
+
+                    };
+
+
+                request.onerror =
+                    function () {
+
+                        reject(
+                            request.error
+                        );
+
+                    };
+
+            }
+        );
+
+
+        db.close();
+
+
+        console.log(
+            "Walkabout state saved."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Couldn't save Walkabout state:",
+            error
+        );
+
+    }
+
+}
+
+
+async function loadWalkaboutState() {
+
+    try {
+
+        const db =
+            await openWalkaboutDatabase();
+
+
+        const state =
+            await new Promise(
+                function (resolve, reject) {
+
+                    const transaction =
+                        db.transaction(
+                            WALKABOUT_STORE,
+                            "readonly"
+                        );
+
+
+                    const store =
+                        transaction.objectStore(
+                            WALKABOUT_STORE
+                        );
+
+
+                    const request =
+                        store.get(
+                            "current"
+                        );
+
+
+                    request.onsuccess =
+                        function () {
+
+                            resolve(
+                                request.result
+                            );
+
+                        };
+
+
+                    request.onerror =
+                        function () {
+
+                            reject(
+                                request.error
+                            );
+
+                        };
+
+                }
+            );
+
+
+        db.close();
+
+
+        if (!state) {
+
+            console.log(
+                "No saved Walkabout state."
+            );
+
+            return;
+
+        }
+
+
+        walkaboutDeck =
+            state.deck || [];
+
+
+        walkaboutDeckBack =
+            state.deckBack || null;
+
+
+        drawnCards =
+            state.drawnCards || [];
+
+
+        if (
+            typeof state.reversalsEnabled ===
+            "boolean"
+        ) {
+
+            walkaboutReversalsEnabled =
+                state.reversalsEnabled;
+
+        }
+
+
+        /*
+            Recreate the visible deck.
+        */
+
+        if (
+            walkaboutDeckBack
+        ) {
+
+            const deckURL =
+                URL.createObjectURL(
+                    walkaboutDeckBack
+                );
+
+
+            deckImage.src =
+                deckURL;
+
+
+            deckImage.style.display =
+                "block";
+
+        }
+
+
+        /*
+            Recreate the drawn-card spread.
+        */
+
+        drawnCardsContainer.innerHTML =
+            "";
+
+
+        for (
+            const drawnCard of drawnCards
+        ) {
+
+            displayWalkaboutCard(
+                drawnCard
+            );
+
+        }
+
+
+        updateDrawCount();
+
+
+        drawButton.disabled =
+            walkaboutDeck.length === 0;
+
+
+        returnButton.disabled =
+            drawnCards.length === 0;
+
+
+        reversalButton.textContent =
+            walkaboutReversalsEnabled
+                ? "Reversals: ENABLED"
+                : "Reversals: DISABLED";
+
+
+        status.textContent =
+            "Walkabout state restored.";
+
+
+        console.log(
+            "Walkabout state restored."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Couldn't restore Walkabout state:",
+            error
+        );
+
+    }
+
+}
+
+
+function displayWalkaboutCard(
+    drawnCard
+) {
+
+    const cardURL =
+        URL.createObjectURL(
+            drawnCard.file
+        );
+
+
+    const cardContainer =
+        document.createElement(
+            "div"
+        );
+
+
+    cardContainer.className =
+        "drawn-card";
+
+
+    const cardImage =
+        document.createElement(
+            "img"
+        );
+
+
+    cardImage.className =
+        "card";
+
+
+    cardImage.alt =
+        "Drawn Walkabout card";
+
+
+    cardImage.src =
+        cardURL;
+
+
+    if (
+        drawnCard.reversed
+    ) {
+
+        cardImage.style.transform =
+            "rotate(180deg)";
+
+    }
+
+
+    const promptDisplay =
+        document.createElement(
+            "div"
+        );
+
+
+    promptDisplay.className =
+        "walkabout-prompt";
+
+
+    promptDisplay.textContent =
+        getWalkaboutPrompt(
+            drawnCard.rank
+        );
+
+
+    cardContainer.appendChild(
+        cardImage
+    );
+
+
+    cardContainer.appendChild(
+        promptDisplay
+    );
+
+
+    drawnCardsContainer.appendChild(
+        cardContainer
+    );
+
+}
+
+
+/* =========================================
    GAME STATE
    ========================================= */
 
@@ -844,6 +1259,7 @@ deckInput.addEventListener(
         );
 
     }
+    saveWalkaboutState();
 );
 
 
@@ -893,9 +1309,37 @@ drawButton.addEventListener(
             walkaboutDeck.pop();
 
 
-        drawnCards.push(
-            card
-        );
+        const rank =
+    getCardRank(card);
+
+
+const reversed =
+    walkaboutReversalsEnabled &&
+    Math.random() < 0.5;
+
+
+const drawnCard = {
+
+    file:
+        card,
+
+    rank:
+        rank,
+
+    reversed:
+        reversed
+
+};
+
+
+drawnCards.push(
+    drawnCard
+);
+
+
+displayWalkaboutCard(
+    drawnCard
+);
 
 
         /*
@@ -966,42 +1410,6 @@ if (
         "rotate(180deg)";
 
 }
-
-
-        /*
-            Create the Walkabout prompt.
-        */
-
-        const promptDisplay =
-            document.createElement(
-                "div"
-            );
-
-
-        promptDisplay.className =
-            "walkabout-prompt";
-
-
-        promptDisplay.textContent =
-            getWalkaboutPrompt(
-                rank
-            );
-
-
-        /*
-            Put the image and prompt
-            into the card container.
-        */
-
-        cardContainer.appendChild(
-            cardImage
-        );
-
-
-        cardContainer.appendChild(
-            promptDisplay
-        );
-
 
         /*
             Put this card into the
@@ -1089,6 +1497,7 @@ if (
             rank;
 
     }
+    saveWalkaboutState();
 );
 
 /* =========================================
@@ -1174,6 +1583,7 @@ returnButton.addEventListener(
         );
 
     }
+    saveWalkaboutState();
 );
 
 /* =========================================
@@ -1200,6 +1610,7 @@ reversalButton.addEventListener(
         );
 
     }
+    saveWalkaboutState();
 );
 
 
