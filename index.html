@@ -1283,104 +1283,54 @@ drawButton.addEventListener(
             walkaboutDeck.pop();
 
 
+        /*
+            Determine its rank.
+        */
+
         const rank =
-    getCardRank(card);
-
-
-const reversed =
-    walkaboutReversalsEnabled &&
-    Math.random() < 0.5;
-
-
-const drawnCard = {
-
-    file:
-        card,
-
-    rank:
-        rank,
-
-    reversed:
-        reversed
-
-};
-
-
-drawnCards.push(
-    drawnCard
-);
-
-
-displayWalkaboutCard(
-    drawnCard
-);
-
-        saveWalkaboutState();
+            getCardRank(card);
 
 
         /*
-            Create the card's object URL.
+            Determine whether this
+            card is reversed.
         */
 
-        const cardURL =
-            URL.createObjectURL(
-                card
-            );
+        const reversed =
+            walkaboutReversalsEnabled &&
+            Math.random() < 0.5;
 
 
         /*
-            Create the container that holds
-            both the card image and its prompt.
+            Store the complete drawn-card
+            state.
         */
 
-        const cardContainer =
-            document.createElement(
-                "div"
-            );
+        const drawnCard = {
+
+            file:
+                card,
+
+            rank:
+                rank,
+
+            reversed:
+                reversed
+
+        };
 
 
-        cardContainer.className =
-            "drawn-card";
+        drawnCards.push(
+            drawnCard
+        );
 
 
         /*
-            Create the card image.
+            Display the card and prompt.
         */
 
-        const cardImage =
-            document.createElement(
-                "img"
-            );
-
-
-        cardImage.className =
-            "card";
-
-
-        cardImage.alt =
-            "Drawn Walkabout card";
-
-
-        cardImage.src =
-    cardURL;
-
-
-if (
-    reversed
-) {
-
-    cardImage.style.transform =
-        "rotate(180deg)";
-
-}
-
-        /*
-            Put this card into the
-            current stop's spread.
-        */
-
-        drawnCardsContainer.appendChild(
-            cardContainer
+        displayWalkaboutCard(
+            drawnCard
         );
 
 
@@ -1398,6 +1348,15 @@ if (
         */
 
         updateDrawCount();
+
+
+        /*
+            Update the status.
+        */
+
+        status.textContent =
+            "Card drawn: rank " +
+            rank;
 
 
         console.log(
@@ -1419,15 +1378,11 @@ if (
 
 
         /*
-            Check whether this card
-            ends the Walkabout stop.
+            Save the current state.
         */
 
-        
-        status.textContent =
-            "Card drawn: rank " +
-            rank;
-saveWalkaboutState();
+        saveWalkaboutState();
+
     }
 );
 
